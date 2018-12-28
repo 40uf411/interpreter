@@ -9,16 +9,34 @@ class SyntacticalAnalyser(object):
         self.rules = rules
 
     def check(self,rule, data):
-        if self.rules[rule].len != data.__len__():
+        # if the data length is longer than the rule length return false
+        if self.rules[rule].len() < data.len():
             return False
         else:
-            for count, element in enumerate(self.rules[rule]):
-                if element[0] != data[count][0] or (element[1] != "" and element[1] != data[count][1]):
-                    return False
+            #browsing the data
+            for count, element in enumerate(data):
+                # if the element doesn't share the same type or the value is set and not the same return false
+                if element[0] != self.rules[rule][count][0] or\
+                   (element[1] != "" and element[1] != self.rules[rule][count][1]):
+                        return False
+            # at this point all the elements on data are in the rule
+            # if they share the same length than this is a full match
+            if data.len() == self.rules[rule].len():
+                return {
+                    "type": "full",
+                    "recursive": False,
+                    "rule": "",
+                    "next": ""
+                }
+            # else they have a partial match
+            else:
+                return {
+                    "type": "partial",
+                    "recursive": False,
+                    "rule": "",
+                    "next": self.rules[rule][count + 1]
+                }
 
-            return {
-                "type": "full"
-            }
 
     def match(self, data):
         found = False
@@ -29,10 +47,40 @@ class SyntacticalAnalyser(object):
 
             # if so
             if result:
-
+                found = True
+                if result["type"] == "full":
+                    return {
+                        "action": 2,
+                        "expect_next": [],
+                        "expect_rule": "",
+                        "matched_rule": rule
+                    }
+                else:
+                    if result["recursive"]:
+                        return {
+                            "action": 3,
+                            "expect_next": [],
+                            "expect_rule": result['rule'],
+                            "matched_rules": ""
+                        }
+                    else:
+                        exp_next.append(result['next'])
 
         # if not return empty arrays and code 0 which means no rule found
-        return [[], 0, [], []]
+        if not found:
+            return {
+                "action": 0,
+                "expect_next": [],
+                "expect_rule": "",
+                "matched_rule": ""
+            }
+        else:
+            return {
+                "action": 1,
+                "expect_next": exp_next,
+                "expect_rule": "",
+                "matched_rule": ""
+            }
 
     def parse(self, data, expect_rule = None):
 
@@ -57,13 +105,13 @@ class SyntacticalAnalyser(object):
             match_result = self.match(temp_chain)
 
             # list of expected elements next
-            expect_next = match_result[0]
+            expect_next = match_result["expect_next"]
             # this var stocks the action to take
-            action = match_result[1]
+            action = match_result["action"]
             # in case of recursive cal required this is the name of the rule its supposed to find
-            exp_rule = match_result[2]
+            exp_rule = match_result["expect_rule"]
             # in case a full match found with a rule this hold the name of the rule
-            rule = match_result[3]
+            rule = match_result["matched_rule"]
 
             # processing the outcome of the match
             # 0 means no match rule found
