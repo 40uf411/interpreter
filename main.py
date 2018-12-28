@@ -29,9 +29,9 @@ sa = SyntacticalAnalyser(Syntax)
 # processing the data
 
 l_data = la.parse(code)
-#s_data = sa.parse(l_data)
+s_data = sa.parse(l_data)
 
 # printing the results
 print("income code: ", code)
 print("lexical array : ", l_data)
-#print("syntactic tree", s_data)
+print("syntactic tree", s_data)
