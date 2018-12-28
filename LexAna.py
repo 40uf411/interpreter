@@ -31,7 +31,7 @@ class LexicalAnalyser(object):
             else:
                 readed_word += letter
                 if letter == '"':
-                    str_mode != str_mode
+                    str_mode = not str_mode
         if readed_word is not None:
             self.match(word=readed_word)
 
